@@ -5,37 +5,52 @@ from OpenGL.GL import *
 from pygame.locals import *
 
 
-class Score_Watcher:
-    """ A class to watch value of Score """
+class Watcher:
+    """ A class to watch value """
 
-    def __init__(self, val):
+    def __init__(self, val, name):
         self.variable = val
+        self.name = name
 
     def plus(self, val):
         self.variable += val
+        print(f"{self.name} added +{val} to {self.variable}")
+        if self.name == 'score':
+            # TODO effect if score is changed
+            pass
 
-        # Change diff and half
-        print(f"Score changed to {self.variable}")
-        # Explanation, return 2 variable
-        # First one is diff and second is half
-        if self.variable < 24:
-            return 1, 1
-        elif 24 <= self.variable < 50:
-            return 1, 2
-        elif 50 <= self.variable < 90:
-            return 2, 1
-        elif 90 <= self.variable < 150:
-            return 2, 2
-        elif 150 <= self.variable < 250:
-            return 3, 1
-        elif self.variable >= 250:
-            return 3, 2
+    def minus(self, val):
+        self.variable -= val
+        print(f"{self.name} reduced -{val} to {self.variable}")
+        if self.name == 'lives':
+            # TODO effect if lives is changed
+            pass
 
     def get_value(self):
-        return self.variable
+        # Change diff and half
+        # Explanation, return 2 variable
+        # First one is diff and second is half
+        if self.name == 'score':
+            if self.variable < 24:
+                return 1, 1, self.variable
+            elif 24 <= self.variable < 50:
+                return 1, 2, self.variable
+            elif 50 <= self.variable < 90:
+                return 2, 1, self.variable
+            elif 90 <= self.variable < 150:
+                return 2, 2, self.variable
+            elif 150 <= self.variable < 250:
+                return 3, 1, self.variable
+            elif self.variable >= 250:
+                return 3, 2, self.variable
+        if self.name == 'lives':
+            return self.variable
+
+    def set_val(self, val):
+        self.variable = val
 
 
-class SimpleScene:
+class TitleScene:
     FONT = None
 
     def __init__(self, next_scene, *text):
@@ -52,19 +67,19 @@ class SimpleScene:
 
         y = 80
         if self.text:
-            if SimpleScene.FONT is None:
-                SimpleScene.FONT = pygame.font.SysFont(None, 60)
+            if TitleScene.FONT is None:
+                TitleScene.FONT = pygame.freetype.SysFont(None, 60)
             loop = 0
             for line in self.text:
                 if loop == 0:
-                    SimpleScene.FONT.render_to(self.background, (230, y), line, pygame.Color('black'))
-                    SimpleScene.FONT.render_to(self.background, (229, y - 1), line, pygame.Color('white'))
+                    TitleScene.FONT.render_to(self.background, (230, y), line, pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (229, y - 1), line, pygame.Color('white'))
                 elif loop == 1:
-                    SimpleScene.FONT.render_to(self.background, (195, y), line, pygame.Color('black'))
-                    SimpleScene.FONT.render_to(self.background, (194, y - 1), line, pygame.Color('white'))
+                    TitleScene.FONT.render_to(self.background, (195, y), line, pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (194, y - 1), line, pygame.Color('white'))
                 else:
-                    SimpleScene.FONT.render_to(self.background, (100, y), line, pygame.Color('black'))
-                    SimpleScene.FONT.render_to(self.background, (99, y - 1), line, pygame.Color('white'))
+                    TitleScene.FONT.render_to(self.background, (100, y), line, pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (99, y - 1), line, pygame.Color('white'))
                 y += 40
                 loop += 1
 
@@ -84,8 +99,8 @@ class LevelScene:
         self.level = ['+', '-', 'x', ':']
         self.background = pygame.Surface((640, 480))
 
-        if SimpleScene.FONT is None:
-            SimpleScene.FONT = pygame.freetype.SysFont(None, 32)
+        if TitleScene.FONT is None:
+            TitleScene.FONT = pygame.freetype.SysFont(None, 32)
 
         self.rects = []
         x = 185
@@ -96,22 +111,23 @@ class LevelScene:
             x += 70
 
     def start(self, *args):
-        pass
+        score.set_val(0)
+        lives.set_val(3)
 
     def draw(self):
         self.background.fill(pygame.Color('lightgrey'))
-        SimpleScene.FONT.render_to(self.background, (170, 70), 'Pilih Operasi Hitung', pygame.Color('black'))
-        SimpleScene.FONT.render_to(self.background, (169, 69), 'Pilih Operasi Hitung', pygame.Color('white'))
+        TitleScene.FONT.render_to(self.background, (170, 70), 'Pilih Operasi Hitung', pygame.Color('black'))
+        TitleScene.FONT.render_to(self.background, (169, 69), 'Pilih Operasi Hitung', pygame.Color('white'))
 
         n = 0
         for rect in self.rects:
             if rect.collidepoint(pygame.mouse.get_pos()):
                 pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect)
             pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect, 3)
-            SimpleScene.FONT.render_to(self.background, (rect.x + 20, rect.y + 20), str(self.level[n]),
-                                       pygame.Color('black'))
-            SimpleScene.FONT.render_to(self.background, (rect.x + 19, rect.y + 19), str(self.level[n]),
-                                       pygame.Color('white'))
+            TitleScene.FONT.render_to(self.background, (rect.x + 20, rect.y + 20), str(self.level[n]),
+                                      pygame.Color('black'))
+            TitleScene.FONT.render_to(self.background, (rect.x + 19, rect.y + 19), str(self.level[n]),
+                                      pygame.Color('white'))
             n += 1
         surfaceToTexture(self.background)
 
@@ -127,62 +143,127 @@ class LevelScene:
 
 class GameScene:
     def __init__(self):
-        if SimpleScene.FONT is None:
-            SimpleScene.FONT = pygame.freetype.SysFont(None, 32)
+        if TitleScene.FONT is None:
+            TitleScene.FONT = pygame.freetype.SysFont(None, 40)
 
-        # self.rects = []
-        # x = 120
-        # y = 120
-        # for n in range(4):
-        #     rect = pygame.Rect(x, y, 80, 80)
-        #     self.rects.append(rect)
-        #     x += 100
+        self.rects = []
+        x = 120
+        y = 120
+        for n in range(2):
+            rect = pygame.Rect(x, y, 80, 80)
+            self.rects.append(rect)
+            x += 100
 
     def start(self, gamestate):
         self.background = pygame.Surface((640, 480))
-        self.background.fill(pygame.Color('lightgrey'))
         self.gamestate = gamestate
-        question, answer = gamestate.pop_question()
+        diff = score.get_value()[0]
+        half = score.get_value()[1]
+        self.question, self.answer, wrong1, wrong2 = gamestate.pop_question(diff, half)
+        self.wrong = random.choice([wrong1, wrong2])
+        self.randomizer = random.randint(0, 1)
 
-        # SimpleScene.FONT.render_to(self.background, (120, 50), question, pygame.Color('black'))
-        # SimpleScene.FONT.render_to(self.background, (119, 49), question, pygame.Color('white'))
+    def draw(self):
+        self.background.fill(pygame.Color('lightgrey'))
+        TitleScene.FONT.render_to(self.background, (120, 50), self.question, pygame.Color('black'))
+        TitleScene.FONT.render_to(self.background, (119, 49), self.question, pygame.Color('white'))
 
-    def draw(self, screen):
-        screen.blit(self.background, (0, 0))
+        TitleScene.FONT.render_to(self.background, (400, 1), f'Score : {score.get_value()[2]}', pygame.Color('black'))
+        TitleScene.FONT.render_to(self.background, (399, 0), f'Score : {score.get_value()[2]}', pygame.Color('white'))
 
-        glColor3ub(255, 255, 255)
-        glPointSize(50)
-        glBegin(GL_POINTS)
-        glVertex2f(100, 50)
-        glEnd()
-        # n = 1
-        # for rect in self.rects:
-        #     if rect.collidepoint(pygame.mouse.get_pos()):
-        #         pygame.draw.rect(screen, pygame.Color('darkgrey'), rect)
-        #     pygame.draw.rect(screen, pygame.Color('darkgrey'), rect, 5)
-        #     SimpleScene.FONT.render_to(screen, (rect.x + 30, rect.y + 30), str(n), pygame.Color('black'))
-        #     SimpleScene.FONT.render_to(screen, (rect.x + 29, rect.y + 29), str(n), pygame.Color('white'))
-        #     n += 1
+        TitleScene.FONT.render_to(self.background, (50, 1), f'Lives : {lives.get_value()}', pygame.Color('black'))
+        TitleScene.FONT.render_to(self.background, (49, 0), f'Lives : {lives.get_value()}', pygame.Color('white'))
+
+        loop = 0
+        for rect in self.rects:
+            if rect.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect)
+            pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect, 5)
+            if self.randomizer == 0:
+                if loop == 0:
+                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.answer),
+                                              pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.answer),
+                                              pygame.Color('white'))
+                if loop == 1:
+                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.wrong),
+                                              pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.wrong),
+                                              pygame.Color('white'))
+            if self.randomizer == 1:
+                if loop == 1:
+                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.answer),
+                                              pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.answer),
+                                              pygame.Color('white'))
+                if loop == 0:
+                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.wrong),
+                                              pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.wrong),
+                                              pygame.Color('white'))
+            loop += 1
+
+        surfaceToTexture(self.background)
 
     def update(self, events, dt):
         for event in events:
-            pass
-            # if event.type == pygame.MOUSEBUTTONDOWN:
-            #     n = 1
-            #     for rect in self.rects:
-            #         if rect.collidepoint(event.pos):
-            #             self.gamestate.answer(n)
-            #             if self.gamestate.questions:
-            #                 return 'GAME', self.gamestate
-            #             else:
-            #                 return 'RESULT', self.gamestate.get_result()
-            #         n += 1
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for rect in self.rects:
+                    if rect.collidepoint(event.pos):
+                        # TODO check specific clicked rect
+                        self.gamestate.answer(self.wrong)
+                        if lives.get_value() == 0:
+                            return 'RESULT', self.gamestate.get_result()
+                        elif self.gamestate.n1:
+                            return 'GAME', self.gamestate
+                        else:
+                            return 'GAME', GameState(self.gamestate.difficulty)
+
+
+
+class ResultScene:
+    FONT = None
+
+    def __init__(self, next_scene, *text):
+        self.background = pygame.Surface((640, 480))
+        self.text = text
+        self.next_scene = next_scene
+        self.additional_text = None
+
+    def start(self, *text):
+        self.additional_text = text
+
+    def draw(self):
+        self.background.fill(pygame.Color('lightgrey'))
+        y = 80
+        if self.text:
+            if ResultScene.FONT is None:
+                ResultScene.FONT = pygame.freetype.SysFont(None, 32)
+            for line in self.text:
+                ResultScene.FONT.render_to(self.background, (120, y), line, pygame.Color('black'))
+                ResultScene.FONT.render_to(self.background, (119, y - 1), line, pygame.Color('white'))
+                y += 50
+
+        if self.additional_text:
+            y = 180
+            for line in self.additional_text:
+                ResultScene.FONT.render_to(self.background, (120, y), line, pygame.Color('black'))
+                ResultScene.FONT.render_to(self.background, (119, y - 1), line, pygame.Color('white'))
+                y += 50
+
+        surfaceToTexture(self.background)
+
+    def update(self, events, dt):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return self.next_scene, None
 
 
 class GameState:
     ans = None
 
-    def __init__(self, difficulty):  # this diff is operator
+    def __init__(self, difficulty):   # this diff is operator (+, -, :, /)
         # Diff 1
         self.d1h1_1 = [random.randint(1, 10)
                        for a in range(0, 30)]
@@ -203,32 +284,86 @@ class GameState:
         self.d2h2_2 = [(round(random.uniform(10.00, 50.00), 1))
                        for a in range(0, 70)]
 
-        self.difficulty = difficulty
-        self.questions = [
-            ('How many legs has a cow?', 4),
-            ('How many legs has a bird?', 2),
-            ('What is 1 x 1 ?', 1)
-        ]
-        self.current_question = None
-        self.right = 0
-        self.wrong = 0
+        # TODO diff pecahan
 
-    def pop_question(self):
-        q = random.choice(self.questions)
-        self.questions.remove(q)
+        self.difficulty = difficulty
+        self.current_question = None
+        self.n1 = None
+        self.n2 = None
+
+    def pop_question(self, diff, half):
+        operator = ''
+        ans = 0
+        q = []
+
+        # Check diff and half based on score
+        if diff == 1:
+            if half == 1:
+                self.n1 = self.d1h1_1
+                self.n2 = self.d1h1_2
+            elif half == 2:
+                self.n1 = self.d1h2_1 + self.d1h1_1
+                self.n2 = self.d1h2_2 + self.d1h1_2
+        elif diff == 2:
+            if half == 1:
+                self.n1 = self.d2h1_1 + self.d1h2_1 + self.d1h1_1
+                self.n2 = self.d2h1_2 + self.d1h2_2 + self.d1h1_2
+            elif half == 2:
+                self.n1 = self.d2h2_1 + self.d2h1_1 + self.d1h2_1 + self.d1h1_1
+                self.n2 = self.d2h2_2 + self.d2h1_2 + self.d1h2_2 + self.d1h1_2
+        elif diff == 3:
+            if half == 1:
+                self.n1 = self.d2h2_1 + self.d2h1_1 + self.d1h2_1 + self.d1h1_1
+                self.n2 = self.d2h2_2 + self.d2h1_2 + self.d1h2_2 + self.d1h1_2
+            elif half == 2:
+                self.n1 = self.d2h2_1 + self.d2h1_1 + self.d1h2_1 + self.d1h1_1
+                self.n2 = self.d2h2_2 + self.d2h1_2 + self.d1h2_2 + self.d1h1_2
+
+        # Make question
+        if self.n1 and self.n2:
+            idx = random.choice(range(len(self.n1)))
+            # Check operator
+            if self.difficulty == 0:
+                operator = '+'
+                ans = self.n1[idx] + self.n2[idx]
+            elif self.difficulty == 1:
+                operator = '-'
+                ans = self.n1[idx] - self.n2[idx]
+            elif self.difficulty == 2:
+                operator = 'x'
+                ans = self.n1[idx] * self.n2[idx]
+            elif self.difficulty == 3:
+                operator = ':'
+                ans = self.n1[idx] / self.n2[idx]
+
+            if int(ans) < 0:
+                wrong1 = ans + random.randint(int(ans), -1)
+                wrong2 = ans - random.randint(int(ans), -1)
+            if int(ans) > 0:
+                wrong1 = ans + random.randint(1, int(ans))
+                wrong2 = ans - random.randint(1, int(ans))
+            else:
+                wrong1 = ans + random.randint(1, 5)
+                wrong2 = ans - random.randint(1, 5)
+
+            q.append(f'{self.n1[idx]} {operator} {self.n2[idx]} = ???')
+            q.append(ans)
+            q.append(wrong1)
+            q.append(wrong2)
+            self.n1.pop(idx)
+            self.n2.pop(idx)
+
         self.current_question = q
         return q
 
     def answer(self, answer):
-        # check diff (self.diff) - its a operator
-
         if answer == self.current_question[1]:
-            self.right += 1
+            score.plus(1)
         else:
-            self.wrong += 1
+            lives.minus(1)
 
     def get_result(self):
-        return f'{self.right} answers correct', f'{self.wrong} answers wrong', '', 'Good!' if self.right > self.wrong else 'You can do better!'
+        return f'Score : {score.get_value()[2]}'
 
 
 def surfaceToTexture(pygame_surface):
@@ -247,7 +382,7 @@ def surfaceToTexture(pygame_surface):
 
 
 def main():
-    global texID, clock, info
+    global texID, clock, info, score, lives
     # Pygame init
     pygame.init()
     pygame.display.init()
@@ -274,11 +409,17 @@ def main():
 
     # Scene init
     scenes = {
-        # 'TITLE': SimpleScene('LEVEL', 'MARTUNG', 'Mari Berhitung', '', '', '', '', '',
-        #                      'Tekan [SPASI] untuk mulai'),
-        'LEVEL': LevelScene()
+        'TITLE': TitleScene('LEVEL', 'MARTUNG', 'Mari Berhitung', '', '', '', '', '',
+                             'Tekan [SPASI] untuk mulai'),
+        'LEVEL': LevelScene(),
+        'GAME': GameScene(),
+        'RESULT': ResultScene('TITLE', 'GAME OVER')
     }
     scene = scenes['LEVEL']
+
+    # Game init
+    score = Watcher(0, 'score')
+    lives = Watcher(3, 'lives')
 
     done = False
     while not done:
@@ -299,7 +440,6 @@ def main():
         result = scene.update(events, dt)
         if result:
             next_scene, state = result
-            print(result)
             if next_scene:
                 scene = scenes[next_scene]
                 scene.start(state)
