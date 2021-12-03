@@ -89,7 +89,7 @@ class TitleScene:
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    print('space')
+                    print(f'space pressed, go to {self.next_scene}')
                     return self.next_scene, None
 
 
@@ -137,6 +137,7 @@ class LevelScene:
                 n = 0
                 for rect in self.rects:
                     if rect.collidepoint(event.pos):
+                        print(f'operator selected {n}, go to game')
                         return 'GAME', GameState(n)
                     n += 1
 
@@ -147,10 +148,10 @@ class GameScene:
             TitleScene.FONT = pygame.freetype.SysFont(None, 40)
 
         self.rects = []
-        x = 120
+        x = 220
         y = 120
         for n in range(2):
-            rect = pygame.Rect(x, y, 80, 80)
+            rect = pygame.Rect(x, y, 60, 60)
             self.rects.append(rect)
             x += 100
 
@@ -159,9 +160,19 @@ class GameScene:
         self.gamestate = gamestate
         diff = score.get_value()[0]
         half = score.get_value()[1]
+
+        print(f'---------------------\n'
+              f'Get diff and half...\n'
+              f'diff > {diff}\n'
+              f'half > {half}\n')
+
         self.question, self.answer, wrong1, wrong2 = gamestate.pop_question(diff, half)
         self.wrong = random.choice([wrong1, wrong2])
         self.randomizer = random.randint(0, 1)
+
+        print(f'Randomize the wrong ans and answer position...\n'
+              f'taken wrong ans > {self.wrong}\n'
+              f'randomizer > {self.randomizer}\n')
 
     def draw(self):
         self.background.fill(pygame.Color('lightgrey'))
@@ -174,51 +185,72 @@ class GameScene:
         TitleScene.FONT.render_to(self.background, (50, 1), f'Lives : {lives.get_value()}', pygame.Color('black'))
         TitleScene.FONT.render_to(self.background, (49, 0), f'Lives : {lives.get_value()}', pygame.Color('white'))
 
-        loop = 0
+        recs_idx = 0
+        self.rect_data = []  # Save rect data in format > [randomizer, index, text]
         for rect in self.rects:
             if rect.collidepoint(pygame.mouse.get_pos()):
                 pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect)
             pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect, 5)
             if self.randomizer == 0:
-                if loop == 0:
+                if recs_idx == 0:
                     TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.answer),
                                               pygame.Color('black'))
                     TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.answer),
                                               pygame.Color('white'))
-                if loop == 1:
+                    data = [0, 0, self.answer]
+                    self.rect_data.append(data)
+                if recs_idx == 1:
                     TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.wrong),
                                               pygame.Color('black'))
                     TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.wrong),
                                               pygame.Color('white'))
+                    data = [0, 1, self.wrong]
+                    self.rect_data.append(data)
+
             if self.randomizer == 1:
-                if loop == 1:
-                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.answer),
-                                              pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.answer),
-                                              pygame.Color('white'))
-                if loop == 0:
+                if recs_idx == 0:
                     TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.wrong),
                                               pygame.Color('black'))
                     TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.wrong),
                                               pygame.Color('white'))
-            loop += 1
+                    data = [1, 0, self.wrong]
+                    self.rect_data.append(data)
+                if recs_idx == 1:
+                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.answer),
+                                              pygame.Color('black'))
+                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.answer),
+                                              pygame.Color('white'))
+                    data = [1, 1, self.answer]
+                    self.rect_data.append(data)
+
+            recs_idx += 1
 
         surfaceToTexture(self.background)
 
     def update(self, events, dt):
+        final_ans = 0
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
+                rect_idx = 0
                 for rect in self.rects:
                     if rect.collidepoint(event.pos):
-                        # TODO check specific clicked rect
-                        self.gamestate.answer(self.wrong)
+                        print('Answering...')
+                        if rect_idx == 0:
+                            final_ans = self.rect_data[rect_idx][2]
+                            print(f'selected ans > {final_ans}')
+                        elif rect_idx == 1:
+                            final_ans = self.rect_data[rect_idx][2]
+                            print(f'selected ans > {final_ans}')
+                        self.gamestate.answer(final_ans)
                         if lives.get_value() == 0:
+                            print('game over\n'
+                                  '-----------------------\n')
                             return 'RESULT', self.gamestate.get_result()
                         elif self.gamestate.n1:
                             return 'GAME', self.gamestate
                         else:
                             return 'GAME', GameState(self.gamestate.difficulty)
-
+                    rect_idx += 1
 
 
 class ResultScene:
@@ -263,7 +295,7 @@ class ResultScene:
 class GameState:
     ans = None
 
-    def __init__(self, difficulty):   # this diff is operator (+, -, :, /)
+    def __init__(self, difficulty):  # this diff is operator (+, -, :, /)
         # Diff 1
         self.d1h1_1 = [random.randint(1, 10)
                        for a in range(0, 30)]
@@ -290,6 +322,9 @@ class GameState:
         self.current_question = None
         self.n1 = None
         self.n2 = None
+
+        print(f'GameState initialized with operator {difficulty}\n'
+              f'0 = [+], 1 = [-], 2 = [x], 3 = [:]\n')
 
     def pop_question(self, diff, half):
         operator = ''
@@ -353,14 +388,22 @@ class GameState:
             self.n1.pop(idx)
             self.n2.pop(idx)
 
+        print(f'Making Question...\n'
+              f'question > {q[0]}\n'
+              f'ans > {q[1]}\n'
+              f'w1 > {q[2]}\n'
+              f'w2 > {q[3]}\n')
+
         self.current_question = q
         return q
 
     def answer(self, answer):
         if answer == self.current_question[1]:
             score.plus(1)
+            print('correct')
         else:
             lives.minus(1)
+            print('wrong')
 
     def get_result(self):
         return f'Score : {score.get_value()[2]}'
@@ -410,12 +453,12 @@ def main():
     # Scene init
     scenes = {
         'TITLE': TitleScene('LEVEL', 'MARTUNG', 'Mari Berhitung', '', '', '', '', '',
-                             'Tekan [SPASI] untuk mulai'),
+                            'Tekan [SPASI] untuk mulai'),
         'LEVEL': LevelScene(),
         'GAME': GameScene(),
         'RESULT': ResultScene('TITLE', 'GAME OVER')
     }
-    scene = scenes['LEVEL']
+    scene = scenes['TITLE']
 
     # Game init
     score = Watcher(0, 'score')
