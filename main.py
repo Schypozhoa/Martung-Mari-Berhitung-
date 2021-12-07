@@ -147,6 +147,8 @@ class GameScene:
         if TitleScene.FONT is None:
             TitleScene.FONT = pygame.freetype.SysFont(None, 40)
 
+        self.on_left = False
+        self.on_right = False
         self.rects = []
         x = 220
         y = 120
@@ -225,32 +227,51 @@ class GameScene:
 
             recs_idx += 1
 
+        if self.on_left:
+            TitleScene.FONT.render_to(self.background, (120, 430), f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('black'))
+            TitleScene.FONT.render_to(self.background, (119, 429), f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('white'))
+        elif self.on_right:
+            TitleScene.FONT.render_to(self.background, (120, 430), f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('black'))
+            TitleScene.FONT.render_to(self.background, (119, 429), f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('white'))
+
         surfaceToTexture(self.background)
 
     def update(self, events, dt):
         final_ans = 0
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                rect_idx = 0
-                for rect in self.rects:
-                    if rect.collidepoint(event.pos):
-                        print('Answering...')
-                        if rect_idx == 0:
-                            final_ans = self.rect_data[rect_idx][2]
-                            print(f'selected ans > {final_ans}')
-                        elif rect_idx == 1:
-                            final_ans = self.rect_data[rect_idx][2]
-                            print(f'selected ans > {final_ans}')
-                        self.gamestate.answer(final_ans)
-                        if lives.get_value() == 0:
-                            print('game over\n'
-                                  '-----------------------\n')
-                            return 'RESULT', self.gamestate.get_result()
-                        elif self.gamestate.n1:
-                            return 'GAME', self.gamestate
-                        else:
-                            return 'GAME', GameState(self.gamestate.difficulty)
-                    rect_idx += 1
+            if pos_x <= -1:
+                self.on_left = True
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    print('Answering...')
+                    final_ans = self.rect_data[0][2]
+                    print(f'selected ans (left) > {final_ans}')
+                    self.gamestate.answer(final_ans)
+                    if lives.get_value() == 0:
+                        print('game over\n'
+                              '-----------------------\n')
+                        return 'RESULT', self.gamestate.get_result()
+                    elif self.gamestate.n1:
+                        return 'GAME', self.gamestate
+                    else:
+                        return 'GAME', GameState(self.gamestate.difficulty)
+            elif pos_x >= -0.02:
+                self.on_right = True
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    print('Answering...')
+                    final_ans = self.rect_data[1][2]
+                    print(f'selected ans (right) > {final_ans}')
+                    self.gamestate.answer(final_ans)
+                    if lives.get_value() == 0:
+                        print('game over\n'
+                              '-----------------------\n')
+                        return 'RESULT', self.gamestate.get_result()
+                    elif self.gamestate.n1:
+                        return 'GAME', self.gamestate
+                    else:
+                        return 'GAME', GameState(self.gamestate.difficulty)
+            else:
+                self.on_left = False
+                self.on_right = False
 
 
 class ResultScene:
@@ -398,6 +419,10 @@ class GameState:
         return q
 
     def answer(self, answer):
+        global pos_x, pos_y
+        pos_x = -0.55
+        pos_y = -0.75
+
         if answer == self.current_question[1]:
             score.plus(1)
             print('correct')
@@ -407,6 +432,202 @@ class GameState:
 
     def get_result(self):
         return f'Score : {score.get_value()[2]}'
+
+
+def drawPlayer():
+    # Her name? Call her Michi
+    leg_L()
+    leg_R()
+
+    skirt()
+    shirt()
+
+
+def shirt():
+    # Base
+    glColor3ub(253, 244, 220)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.591 + pos_x, 0.519 + pos_y)
+    glVertex2f(0.506 + pos_x, 0.502 + pos_y)
+    glVertex2f(0.429 + pos_x, 0.516 + pos_y)
+    glVertex2f(0.439 + pos_x, 0.708 + pos_y)
+    glVertex2f(0.494 + pos_x, 0.721 + pos_y)
+    glVertex2f(0.506 + pos_x, 0.679 + pos_y)
+    glVertex2f(0.538 + pos_x, 0.732 + pos_y)
+    glVertex2f(0.592 + pos_x, 0.715 + pos_y)
+    glEnd()
+
+    # Hand L
+    glColor3ub(255, 229, 180)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.367 + pos_x, 0.529 + pos_y)
+    glVertex2f(0.393 + pos_x, 0.518 + pos_y)
+    glVertex2f(0.389 + pos_x, 0.498 + pos_y)
+    glVertex2f(0.372 + pos_x, 0.494 + pos_y)
+    glVertex2f(0.356 + pos_x, 0.503 + pos_y)
+    glVertex2f(0.354 + pos_x, 0.519 + pos_y)
+    glEnd()
+
+    # Hand R
+    glColor3ub(255, 229, 180)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.635 + pos_x, 0.502 + pos_y)
+    glVertex2f(0.651 + pos_x, 0.493 + pos_y)
+    glVertex2f(0.673 + pos_x, 0.500 + pos_y)
+    glVertex2f(0.673 + pos_x, 0.519 + pos_y)
+    glVertex2f(0.661 + pos_x, 0.531 + pos_y)
+    glVertex2f(0.634 + pos_x, 0.521 + pos_y)
+    glEnd()
+
+    # Base L Arm
+    glColor3ub(253, 244, 220)
+    glBegin(GL_QUADS)
+    glVertex2f(0.592 + pos_x, 0.715 + pos_y)
+    glVertex2f(0.672 + pos_x, 0.527 + pos_y)
+    glVertex2f(0.629 + pos_x, 0.513 + pos_y)
+    glVertex2f(0.591 + pos_x, 0.621 + pos_y)
+    glEnd()
+
+    # Base R Arm
+    glBegin(GL_QUADS)
+    glVertex2f(0.435 + pos_x, 0.615 + pos_y)
+    glVertex2f(0.397 + pos_x, 0.513 + pos_y)
+    glVertex2f(0.360 + pos_x, 0.530 + pos_y)
+    glVertex2f(0.439 + pos_x, 0.708 + pos_y)
+    glEnd()
+
+    # Motive L
+    glColor3ub(135, 206, 250)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.440 + pos_x, 0.709 + pos_y)
+    glVertex2f(0.436 + pos_x, 0.693 + pos_y)
+    glVertex2f(0.440 + pos_x, 0.680 + pos_y)
+    glVertex2f(0.445 + pos_x, 0.672 + pos_y)
+    glVertex2f(0.453 + pos_x, 0.664 + pos_y)
+    glVertex2f(0.463 + pos_x, 0.659 + pos_y)
+    glVertex2f(0.474 + pos_x, 0.657 + pos_y)
+    glVertex2f(0.485 + pos_x, 0.660 + pos_y)
+    glVertex2f(0.498 + pos_x, 0.668 + pos_y)
+    glVertex2f(0.515 + pos_x, 0.679 + pos_y)
+    glVertex2f(0.494 + pos_x, 0.721 + pos_y)
+    glEnd()
+
+    # Motive R
+    glColor3ub(135, 206, 250)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.591 + pos_x, 0.716 + pos_y)
+    glVertex2f(0.595 + pos_x, 0.697 + pos_y)
+    glVertex2f(0.592 + pos_x, 0.680 + pos_y)
+    glVertex2f(0.583 + pos_x, 0.667 + pos_y)
+    glVertex2f(0.573 + pos_x, 0.657 + pos_y)
+    glVertex2f(0.557 + pos_x, 0.652 + pos_y)
+    glVertex2f(0.541 + pos_x, 0.652 + pos_y)
+    glVertex2f(0.526 + pos_x, 0.657 + pos_y)
+    glVertex2f(0.514 + pos_x, 0.667 + pos_y)
+    glVertex2f(0.506 + pos_x, 0.679 + pos_y)
+    glVertex2f(0.538 + pos_x, 0.735 + pos_y)
+    glEnd()
+
+    # Line
+    glColor3ub(0, 0, 0)
+    glBegin(GL_LINES)
+    glVertex2f(0.510 + pos_x, 0.679 + pos_y)
+    glVertex2f(0.506 + pos_x, 0.502 + pos_y)
+    glEnd()
+
+
+def skirt():
+    # Base
+    glColor3ub(255, 192, 203)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.400 + pos_x, 0.427 + pos_y)
+    glVertex2f(0.446 + pos_x, 0.414 + pos_y)
+    glVertex2f(0.484 + pos_x, 0.410 + pos_y)
+    glVertex2f(0.533 + pos_x, 0.410 + pos_y)
+    glVertex2f(0.596 + pos_x, 0.416 + pos_y)
+    glVertex2f(0.633 + pos_x, 0.426 + pos_y)
+    glVertex2f(0.591 + pos_x, 0.519 + pos_y)
+    glVertex2f(0.506 + pos_x, 0.502 + pos_y)
+    glVertex2f(0.429 + pos_x, 0.516 + pos_y)
+    glEnd()
+
+    # Line
+    glColor3ub(0, 0, 0)
+    glBegin(GL_LINES)
+    glVertex2f(0.446 + pos_x, 0.414 + pos_y)
+    glVertex2f(0.463 + pos_x, 0.511 + pos_y)
+    glEnd()
+
+    glBegin(GL_LINES)
+    glVertex2f(0.484 + pos_x, 0.410 + pos_y)
+    glVertex2f(0.492 + pos_x, 0.505 + pos_y)
+    glEnd()
+
+    glBegin(GL_LINES)
+    glVertex2f(0.533 + pos_x, 0.410 + pos_y)
+    glVertex2f(0.524 + pos_x, 0.505 + pos_y)
+    glEnd()
+
+    glBegin(GL_LINES)
+    glVertex2f(0.597 + pos_x, 0.416 + pos_y)
+    glVertex2f(0.561 + pos_x, 0.513 + pos_y)
+    glEnd()
+
+
+def leg_L():
+    # Leg
+    glColor3ub(255, 229, 180)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.439 + pos_x, 0.308 + pos_y)
+    glVertex2f(0.455 + pos_x, 0.301 + pos_y)
+    glVertex2f(0.473 + pos_x, 0.299 + pos_y)
+    glVertex2f(0.477 + pos_x, 0.346 + pos_y)
+    glVertex2f(0.486 + pos_x, 0.426 + pos_y)
+    glVertex2f(0.446 + pos_x, 0.431 + pos_y)
+    glVertex2f(0.445 + pos_x, 0.350 + pos_y)
+    glEnd()
+
+    # Shoe
+    glColor3ub(11, 11, 69)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.473 + pos_x, 0.280 + pos_y)
+    glVertex2f(0.430 + pos_x, 0.280 + pos_y)
+    glVertex2f(0.419 + pos_x, 0.283 + pos_y)
+    glVertex2f(0.416 + pos_x, 0.288 + pos_y)
+    glVertex2f(0.417 + pos_x, 0.294 + pos_y)
+    glVertex2f(0.423 + pos_x, 0.300 + pos_y)
+    glVertex2f(0.439 + pos_x, 0.308 + pos_y)
+    glVertex2f(0.455 + pos_x, 0.301 + pos_y)
+    glVertex2f(0.473 + pos_x, 0.299 + pos_y)
+    glEnd()
+
+
+def leg_R():
+    # Leg
+    glColor3ub(255, 229, 180)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.561 + pos_x, 0.308 + pos_y)
+    glVertex2f(0.580 + pos_x, 0.304 + pos_y)
+    glVertex2f(0.597 + pos_x, 0.305 + pos_y)
+    glVertex2f(0.583 + pos_x, 0.353 + pos_y)
+    glVertex2f(0.576 + pos_x, 0.432 + pos_y)
+    glVertex2f(0.538 + pos_x, 0.429 + pos_y)
+    glVertex2f(0.557 + pos_x, 0.349 + pos_y)
+    glEnd()
+
+    # Shoe
+    glColor3ub(11, 11, 69)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.561 + pos_x, 0.308 + pos_y)
+    glVertex2f(0.580 + pos_x, 0.304 + pos_y)
+    glVertex2f(0.597 + pos_x, 0.305 + pos_y)
+    glVertex2f(0.600 + pos_x, 0.280 + pos_y)
+    glVertex2f(0.552 + pos_x, 0.280 + pos_y)
+    glVertex2f(0.545 + pos_x, 0.281 + pos_y)
+    glVertex2f(0.539 + pos_x, 0.287 + pos_y)
+    glVertex2f(0.540 + pos_x, 0.294 + pos_y)
+    glVertex2f(0.547 + pos_x, 0.299 + pos_y)
+    glEnd()
 
 
 def surfaceToTexture(pygame_surface):
@@ -425,7 +646,7 @@ def surfaceToTexture(pygame_surface):
 
 
 def main():
-    global texID, clock, info, score, lives
+    global texID, clock, info, score, lives, pos_x, pos_y
     # Pygame init
     pygame.init()
     pygame.display.init()
@@ -463,6 +684,9 @@ def main():
     # Game init
     score = Watcher(0, 'score')
     lives = Watcher(3, 'lives')
+    pos_x = -0.55
+    pos_y = -0.75
+    draw = False
 
     done = False
     while not done:
@@ -477,7 +701,6 @@ def main():
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClearDepth(1.0)
         glLoadIdentity()
-        glEnable(GL_TEXTURE_2D)
 
         # Update Scene
         result = scene.update(events, dt)
@@ -489,7 +712,9 @@ def main():
 
         scene.draw()
 
-        # Draw texture openGL Texture
+        # Draw scene as openGL Texture
+        glEnable(GL_TEXTURE_2D)
+        glColor3ub(255, 255, 255)
         glBindTexture(GL_TEXTURE_2D, texID)
         glBegin(GL_QUADS)
         glTexCoord2f(0, 0)
@@ -501,7 +726,26 @@ def main():
         glTexCoord2f(1, 0)
         glVertex2f(1, 1)
         glEnd()
+        glDisable(GL_TEXTURE_2D)
 
+        # Draw player
+        if result and result[0] == 'GAME':
+            draw = True
+        elif result and result[0] == 'RESULT':
+            draw = False
+
+        if draw:
+            glScaled(1.5, 1.5, 1)
+
+            keys = pygame.key.get_pressed()
+            if keys[K_LEFT] and pos_x >= -1.02:
+                pos_x -= 0.015
+            if keys[K_RIGHT] and pos_x <= 0:
+                pos_x += 0.015
+            if keys[K_q]:  # debug
+                print(pos_x)
+
+            drawPlayer()
         pygame.display.flip()
         dt = clock.tick(60)
 
