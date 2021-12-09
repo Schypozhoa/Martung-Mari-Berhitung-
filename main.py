@@ -444,9 +444,13 @@ class GameState:
 
         if answer == self.current_question[1]:
             score.plus(1)
+            sfx = pygame.mixer.Sound('musik/correct.wav')
+            sfx.play()
             print('correct')
         else:
             lives.minus(1)
+            sfx = pygame.mixer.Sound('musik/wrong.wav')
+            sfx.play()
             print('wrong')
 
     def get_result(self):
@@ -462,6 +466,8 @@ class GameState:
         else:
             currHigh = high
 
+        sfx = pygame.mixer.Sound('musik/gameover.wav')
+        sfx.play()
         return f'Skor : {currScore}', f'Skor Tertinggi : {currHigh}'
 
 
@@ -909,6 +915,10 @@ def main():
     pygame.init()
     pygame.display.init()
     pygame.display.set_mode((640, 480), OPENGL | DOUBLEBUF)
+    pygame.display.set_caption('Mar-Tung')
+    ico = pygame.image.load('gambar/4.jpg')
+    ico = pygame.transform.rotozoom(ico, 0, 0.32)
+    pygame.display.set_icon(ico)
     info = pygame.display.Info()
     dt = 0
     clock = pygame.time.Clock()
@@ -947,6 +957,9 @@ def main():
     pos_x = -0.55
     pos_y = -0.9
     draw = False
+    m1_toggle = True
+    m2_toggle = False
+    canistop = False
 
     done = False
     while not done:
@@ -1014,6 +1027,29 @@ def main():
                 print(pos_x)
 
             drawPlayer()
+
+        # Music
+        fullstr = str(scene)[10:19]
+        if m1_toggle and 'Title' in fullstr:
+            print('Music 1 load and play')
+            pygame.mixer.music.load('musik/01.wav')
+            pygame.mixer.music.play(-1, 0.0)
+            m1_toggle = False
+            m2_toggle = True
+        elif m2_toggle and 'Game' in fullstr:
+            print('Music 1 stop, music 2 load and play')
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load('musik/02.wav')
+            pygame.mixer.music.play(-1, 0.0)
+            m2_toggle = False
+            canistop = True
+        elif canistop and 'Result' in fullstr:
+            print('Music 2 stop')
+            pygame.mixer.music.stop()
+            canistop = False
+            m1_toggle = True
+
+
         pygame.display.flip()
         dt = clock.tick(60)
 
