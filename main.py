@@ -15,16 +15,10 @@ class Watcher:
     def plus(self, val):
         self.variable += val
         print(f"{self.name} added +{val} to {self.variable}")
-        if self.name == 'score':
-            # TODO effect if score is changed
-            pass
 
     def minus(self, val):
         self.variable -= val
         print(f"{self.name} reduced -{val} to {self.variable}")
-        if self.name == 'lives':
-            # TODO effect if lives is changed
-            pass
 
     def get_value(self):
         # Change diff and half
@@ -63,26 +57,32 @@ class TitleScene:
         pass
 
     def draw(self):
-        self.background.fill(pygame.Color('lightgrey'))
+        self.background.blit(pygame.image.load('gambar/bg_menu.jpg'), (0, 0))
+        spasi = pygame.image.load('gambar/spasi.png')
+        spasi = pygame.transform.rotozoom(spasi, 0, 0.1)
 
-        y = 80
+        fontTitle = pygame.freetype.Font('font/AdigianaUI.ttf', 50)
+        fontSubtitle = pygame.freetype.Font('font/AdigianaUI.ttf', 40)
+        fontContent = pygame.freetype.Font('font/Alice-Regular.ttf', 30)
+        surfCenterW = self.background.get_width() / 2
+
+        y = 90
         if self.text:
-            if TitleScene.FONT is None:
-                TitleScene.FONT = pygame.freetype.SysFont(None, 60)
             loop = 0
             for line in self.text:
                 if loop == 0:
-                    TitleScene.FONT.render_to(self.background, (230, y), line, pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (229, y - 1), line, pygame.Color('white'))
+                    fontTitle.render_to(self.background, (surfCenterW - 130, y), line, pygame.Color('black'))
+                    fontTitle.render_to(self.background, (surfCenterW - 131, y - 1), line, pygame.Color('white'))
                 elif loop == 1:
-                    TitleScene.FONT.render_to(self.background, (195, y), line, pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (194, y - 1), line, pygame.Color('white'))
+                    fontSubtitle.render_to(self.background, (surfCenterW - 205, y), line, pygame.Color('black'))
+                    fontSubtitle.render_to(self.background, (surfCenterW - 206, y - 1), line, pygame.Color('white'))
                 else:
-                    TitleScene.FONT.render_to(self.background, (100, y), line, pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (99, y - 1), line, pygame.Color('white'))
-                y += 40
+                    fontContent.render_to(self.background, (surfCenterW - 180, y), line, pygame.Color('black'))
+                    fontContent.render_to(self.background, (surfCenterW - 181, y - 1), line, pygame.Color('white'))
+                y += 70
                 loop += 1
 
+        self.background.blit(spasi, (230, 360))
         surfaceToTexture(self.background)
 
     def update(self, events, dt):
@@ -99,35 +99,37 @@ class LevelScene:
         self.level = ['+', '-', 'x', ':']
         self.background = pygame.Surface((640, 480))
 
-        if TitleScene.FONT is None:
-            TitleScene.FONT = pygame.freetype.SysFont(None, 32)
-
         self.rects = []
-        x = 185
-        y = 170
+        x = 200
+        y = 150
         for n in range(4):
-            rect = pygame.Rect(x, y, 60, 60)
+            if n >= 2:
+                if n == 2:
+                    x = 200
+                rect = pygame.Rect(x, y + 125, 100, 100)
+            else:
+                rect = pygame.Rect(x, y, 100, 100)
             self.rects.append(rect)
-            x += 70
+            x += 125
 
     def start(self, *args):
         score.set_val(0)
         lives.set_val(3)
 
     def draw(self):
-        self.background.fill(pygame.Color('lightgrey'))
-        TitleScene.FONT.render_to(self.background, (170, 70), 'Pilih Operasi Hitung', pygame.Color('black'))
-        TitleScene.FONT.render_to(self.background, (169, 69), 'Pilih Operasi Hitung', pygame.Color('white'))
+        self.background.blit(pygame.image.load('gambar/bg_menu.jpg'), (0, 0))
+        fontTitle = pygame.freetype.Font('font/Archicoco.ttf', 40)
+        surfCenter = self.background.get_width() / 2
+
+        fontTitle.render_to(self.background, (surfCenter - 210, 100), 'Pilih Operasi Hitung', pygame.Color('black'))
+        fontTitle.render_to(self.background, (surfCenter - 211, 99), 'Pilih Operasi Hitung', pygame.Color('white'))
 
         n = 0
         for rect in self.rects:
+            img = pygame.image.load(f'gambar/{n + 1}.jpg')
+            self.background.blit(img, img.get_rect(center=rect.center))
             if rect.collidepoint(pygame.mouse.get_pos()):
-                pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect)
-            pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect, 3)
-            TitleScene.FONT.render_to(self.background, (rect.x + 20, rect.y + 20), str(self.level[n]),
-                                      pygame.Color('black'))
-            TitleScene.FONT.render_to(self.background, (rect.x + 19, rect.y + 19), str(self.level[n]),
-                                      pygame.Color('white'))
+                pygame.draw.rect(self.background, pygame.Color('green'), rect, 3)
             n += 1
         surfaceToTexture(self.background)
 
@@ -144,18 +146,10 @@ class LevelScene:
 
 class GameScene:
     def __init__(self):
-        if TitleScene.FONT is None:
-            TitleScene.FONT = pygame.freetype.SysFont(None, 40)
 
         self.on_left = False
         self.on_right = False
-        self.rects = []
-        x = 220
-        y = 120
-        for n in range(2):
-            rect = pygame.Rect(x, y, 60, 60)
-            self.rects.append(rect)
-            x += 100
+        self.rects = [pygame.Rect(55, 320, 60, 60), pygame.Rect(545, 320, 60, 60)]
 
     def start(self, gamestate):
         self.background = pygame.Surface((640, 480))
@@ -177,69 +171,87 @@ class GameScene:
               f'randomizer > {self.randomizer}\n')
 
     def draw(self):
-        self.background.fill(pygame.Color('lightgrey'))
-        TitleScene.FONT.render_to(self.background, (120, 50), self.question, pygame.Color('black'))
-        TitleScene.FONT.render_to(self.background, (119, 49), self.question, pygame.Color('white'))
+        self.background.blit(pygame.image.load('gambar/bg_play.jpg'), (0, 0))
+        fontQ = pygame.freetype.Font('font/Bryndan_Write.ttf', 50)
+        fontA = pygame.freetype.Font('font/Bryndan_Write.ttf', 30)
+        fontInfo = pygame.freetype.Font('font/Bryndan_Write.ttf', 20)
+        fontStat = pygame.freetype.Font('font/Bryndan_Write.ttf', 25)
+        surfCenterW = self.background.get_width() / 2
+        surfCenterH = self.background.get_height() / 2
 
-        TitleScene.FONT.render_to(self.background, (400, 1), f'Score : {score.get_value()[2]}', pygame.Color('black'))
-        TitleScene.FONT.render_to(self.background, (399, 0), f'Score : {score.get_value()[2]}', pygame.Color('white'))
+        fontQ.render_to(self.background, (surfCenterW - 80, surfCenterH - 45), self.question, pygame.Color('black'))
+        fontQ.render_to(self.background, (surfCenterW - 81, surfCenterH - 46), self.question, pygame.Color('white'))
 
-        TitleScene.FONT.render_to(self.background, (50, 1), f'Lives : {lives.get_value()}', pygame.Color('black'))
-        TitleScene.FONT.render_to(self.background, (49, 0), f'Lives : {lives.get_value()}', pygame.Color('white'))
+        fontStat.render_to(self.background, (520, 5), f'Skor : {score.get_value()[2]}', pygame.Color('black'))
+        fontStat.render_to(self.background, (519, 4), f'Skor : {score.get_value()[2]}', pygame.Color('white'))
+
+        fontStat.render_to(self.background, (surfCenterW - 75, 5), f'Tertinggi : {high}', pygame.Color('black'))
+        fontStat.render_to(self.background, (surfCenterW - 75, 4), f'Tertinggi : {high}', pygame.Color('white'))
+
+        fontStat.render_to(self.background, (10, 5), f'Nyawa : {lives.get_value()}', pygame.Color('black'))
+        fontStat.render_to(self.background, (9, 4), f'Nyawa : {lives.get_value()}', pygame.Color('white'))
 
         recs_idx = 0
         self.rect_data = []  # Save rect data in format > [randomizer, index, text]
         for rect in self.rects:
-            if rect.collidepoint(pygame.mouse.get_pos()):
-                pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect)
-            pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect, 5)
+            # if self.on_left and recs_idx == 0:
+            #     pygame.draw.rect(self.background, pygame.Color('green'), rect, 3)
+            # elif self.on_right and recs_idx == 1:
+            #     pygame.draw.rect(self.background, pygame.Color('green'), rect, 3)
+            # pygame.draw.rect(self.background, pygame.Color('darkgrey'), rect, 5)
             if self.randomizer == 0:
                 if recs_idx == 0:
-                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.answer),
-                                              pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.answer),
-                                              pygame.Color('white'))
+                    fontA.render_to(self.background, (rect.x + 1, rect.y + 1), str(self.answer),
+                                    pygame.Color('black'))
+                    fontA.render_to(self.background, (rect.x, rect.y), str(self.answer),
+                                    pygame.Color('white'))
                     data = [0, 0, self.answer]
                     self.rect_data.append(data)
                 if recs_idx == 1:
-                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.wrong),
-                                              pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.wrong),
-                                              pygame.Color('white'))
+                    fontA.render_to(self.background, (rect.x + 1, rect.y + 1), str(self.wrong),
+                                    pygame.Color('black'))
+                    fontA.render_to(self.background, (rect.x, rect.y), str(self.wrong),
+                                    pygame.Color('white'))
                     data = [0, 1, self.wrong]
                     self.rect_data.append(data)
 
             if self.randomizer == 1:
                 if recs_idx == 0:
-                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.wrong),
-                                              pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.wrong),
-                                              pygame.Color('white'))
+                    fontA.render_to(self.background, (rect.x + 1, rect.y + 1), str(self.wrong),
+                                    pygame.Color('black'))
+                    fontA.render_to(self.background, (rect.x, rect.y), str(self.wrong),
+                                    pygame.Color('white'))
                     data = [1, 0, self.wrong]
                     self.rect_data.append(data)
                 if recs_idx == 1:
-                    TitleScene.FONT.render_to(self.background, (rect.x + 30, rect.y + 30), str(self.answer),
-                                              pygame.Color('black'))
-                    TitleScene.FONT.render_to(self.background, (rect.x + 29, rect.y + 29), str(self.answer),
-                                              pygame.Color('white'))
+                    fontA.render_to(self.background, (rect.x + 1, rect.y + 1), str(self.answer),
+                                    pygame.Color('black'))
+                    fontA.render_to(self.background, (rect.x, rect.y), str(self.answer),
+                                    pygame.Color('white'))
                     data = [1, 1, self.answer]
                     self.rect_data.append(data)
 
             recs_idx += 1
 
         if self.on_left:
-            TitleScene.FONT.render_to(self.background, (120, 430), f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('black'))
-            TitleScene.FONT.render_to(self.background, (119, 429), f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('white'))
+            fontInfo.render_to(self.background, (surfCenterW - 140, 450),
+                               f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('black'))
+            fontInfo.render_to(self.background, (surfCenterW - 141, 449),
+                               f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('white'))
         elif self.on_right:
-            TitleScene.FONT.render_to(self.background, (120, 430), f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('black'))
-            TitleScene.FONT.render_to(self.background, (119, 429), f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('white'))
+            fontInfo.render_to(self.background, (surfCenterW - 140, 450),
+                               f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('black'))
+            fontInfo.render_to(self.background, (surfCenterW - 141, 449),
+                               f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('white'))
 
         surfaceToTexture(self.background)
 
     def update(self, events, dt):
         final_ans = 0
         for event in events:
-            if pos_x <= -1:
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #     print(event.pos)
+            if pos_x <= -0.98:
                 self.on_left = True
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     print('Answering...')
@@ -254,7 +266,7 @@ class GameScene:
                         return 'GAME', self.gamestate
                     else:
                         return 'GAME', GameState(self.gamestate.difficulty)
-            elif pos_x >= -0.02:
+            elif pos_x >= -0.04:
                 self.on_right = True
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     print('Answering...')
@@ -264,7 +276,7 @@ class GameScene:
                     if lives.get_value() == 0:
                         print('game over\n'
                               '-----------------------\n')
-                        return 'RESULT', self.gamestate.get_result()
+                        return ('RESULT', self.gamestate.get_result())
                     elif self.gamestate.n1:
                         return 'GAME', self.gamestate
                     else:
@@ -275,7 +287,6 @@ class GameScene:
 
 
 class ResultScene:
-    FONT = None
 
     def __init__(self, next_scene, *text):
         self.background = pygame.Surface((640, 480))
@@ -283,27 +294,35 @@ class ResultScene:
         self.next_scene = next_scene
         self.additional_text = None
 
-    def start(self, *text):
+    def start(self, text):
         self.additional_text = text
 
     def draw(self):
-        self.background.fill(pygame.Color('lightgrey'))
+        self.background.blit(pygame.image.load('gambar/bg_menu.jpg'), (0, 0))
+        spasi = pygame.image.load('gambar/spasi.png')
+        spasi = pygame.transform.rotozoom(spasi, 0, 0.1)
+        fontTop = pygame.freetype.Font('font/Bryndan_Write.ttf', 50)
+        fontBot = pygame.freetype.Font('font/Bryndan_Write.ttf', 30)
+        surfCenterW = self.background.get_width() / 2
+
+        fontBot.render_to(self.background, (surfCenterW - 180, 370), 'Tekan           untuk kembali', pygame.Color('black'))
+        fontBot.render_to(self.background, (surfCenterW - 181, 370 - 1), 'Tekan           untuk kembali', pygame.Color('white'))
+
         y = 80
         if self.text:
-            if ResultScene.FONT is None:
-                ResultScene.FONT = pygame.freetype.SysFont(None, 32)
             for line in self.text:
-                ResultScene.FONT.render_to(self.background, (120, y), line, pygame.Color('black'))
-                ResultScene.FONT.render_to(self.background, (119, y - 1), line, pygame.Color('white'))
+                fontTop.render_to(self.background, (surfCenterW - 150, y), line, pygame.Color('black'))
+                fontTop.render_to(self.background, (surfCenterW - 150, y - 1), line, pygame.Color('white'))
                 y += 50
 
         if self.additional_text:
             y = 180
             for line in self.additional_text:
-                ResultScene.FONT.render_to(self.background, (120, y), line, pygame.Color('black'))
-                ResultScene.FONT.render_to(self.background, (119, y - 1), line, pygame.Color('white'))
+                fontBot.render_to(self.background, (surfCenterW - 125, y), line, pygame.Color('black'))
+                fontBot.render_to(self.background, (surfCenterW - 125, y - 1), line, pygame.Color('white'))
                 y += 50
 
+        self.background.blit(spasi, (225, 360))
         surfaceToTexture(self.background)
 
     def update(self, events, dt):
@@ -402,10 +421,10 @@ class GameState:
                 wrong1 = ans + random.randint(1, 5)
                 wrong2 = ans - random.randint(1, 5)
 
-            q.append(f'{self.n1[idx]} {operator} {self.n2[idx]} = ???')
-            q.append(ans)
-            q.append(wrong1)
-            q.append(wrong2)
+            q.append(f'{self.n1[idx]}{operator}{self.n2[idx]}=???')
+            q.append(round(ans, 1))
+            q.append(round(wrong1, 1))
+            q.append(round(wrong2, 1))
             self.n1.pop(idx)
             self.n2.pop(idx)
 
@@ -421,7 +440,7 @@ class GameState:
     def answer(self, answer):
         global pos_x, pos_y
         pos_x = -0.55
-        pos_y = -0.75
+        pos_y = -0.9
 
         if answer == self.current_question[1]:
             score.plus(1)
@@ -431,21 +450,202 @@ class GameState:
             print('wrong')
 
     def get_result(self):
-        return f'Score : {score.get_value()[2]}'
+        currScore = score.get_value()[2]
+        currHigh = 0
+        if currScore > high:
+            file_w = open('config.txt', 'w')
+            name = 'skor tertinggi'.encode('utf8').hex()
+            value = hex(currScore)
+            file_w.write(name + ' = ' + value)
+            file_w.close()
+            currHigh = currScore
+        else:
+            currHigh = high
+
+        return f'Skor : {currScore}', f'Skor Tertinggi : {currHigh}'
 
 
 def drawPlayer():
     # Her name? Call her Michi
     leg_L()
     leg_R()
-
+    head()
     skirt()
     shirt()
 
 
+def head():
+    # Hair
+    glColor3ub(160, 82, 45)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.381 + pos_x, 0.905 + pos_y)
+    glVertex2f(0.393 + pos_x, 0.929 + pos_y)
+    glVertex2f(0.409 + pos_x, 0.950 + pos_y)
+    glVertex2f(0.427 + pos_x, 0.967 + pos_y)
+    glVertex2f(0.448 + pos_x, 0.982 + pos_y)
+    glVertex2f(0.470 + pos_x, 0.991 + pos_y)
+    glVertex2f(0.492 + pos_x, 0.997 + pos_y)
+    glVertex2f(0.512 + pos_x, 0.999 + pos_y)
+    glVertex2f(0.536 + pos_x, 0.998 + pos_y)
+    glVertex2f(0.559 + pos_x, 0.994 + pos_y)
+    glVertex2f(0.578 + pos_x, 0.987 + pos_y)
+    glVertex2f(0.597 + pos_x, 0.977 + pos_y)
+    glVertex2f(0.614 + pos_x, 0.964 + pos_y)
+    glVertex2f(0.629 + pos_x, 0.949 + pos_y)
+    glVertex2f(0.642 + pos_x, 0.935 + pos_y)
+    glVertex2f(0.650 + pos_x, 0.917 + pos_y)
+    glVertex2f(0.657 + pos_x, 0.901 + pos_y)
+    glVertex2f(0.662 + pos_x, 0.882 + pos_y)
+    glVertex2f(0.683 + pos_x, 0.697 + pos_y)
+    glVertex2f(0.506 + pos_x, 0.679 + pos_y)
+    glVertex2f(0.380 + pos_x, 0.692 + pos_y)
+    glVertex2f(0.382 + pos_x, 0.728 + pos_y)
+    glVertex2f(0.364 + pos_x, 0.694 + pos_y)
+    glVertex2f(0.338 + pos_x, 0.688 + pos_y)
+    glVertex2f(0.374 + pos_x, 0.877 + pos_y)
+    glEnd()
+
+    # Neck
+    glColor3ub(255, 229, 180)
+    glBegin(GL_QUADS)
+    glVertex2f(0.493 + pos_x, 0.681 + pos_y)
+    glVertex2f(0.537 + pos_x, 0.678 + pos_y)
+    glVertex2f(0.540 + pos_x, 0.760 + pos_y)
+    glVertex2f(0.496 + pos_x, 0.760 + pos_y)
+    glEnd()
+
+    # Base Face
+    glBegin(GL_POLYGON)
+    glVertex2f(0.482 + pos_x, 0.748 + pos_y)
+    glVertex2f(0.468 + pos_x, 0.753 + pos_y)
+    glVertex2f(0.455 + pos_x, 0.759 + pos_y)
+    glVertex2f(0.443 + pos_x, 0.767 + pos_y)
+    glVertex2f(0.432 + pos_x, 0.777 + pos_y)
+    glVertex2f(0.423 + pos_x, 0.788 + pos_y)
+    glVertex2f(0.417 + pos_x, 0.798 + pos_y)
+    glVertex2f(0.412 + pos_x, 0.807 + pos_y)
+    glVertex2f(0.407 + pos_x, 0.819 + pos_y)
+    glVertex2f(0.404 + pos_x, 0.834 + pos_y)
+    glVertex2f(0.402 + pos_x, 0.847 + pos_y)
+    glVertex2f(0.403 + pos_x, 0.860 + pos_y)
+    glVertex2f(0.405 + pos_x, 0.873 + pos_y)
+    glVertex2f(0.408 + pos_x, 0.885 + pos_y)
+    glVertex2f(0.412 + pos_x, 0.896 + pos_y)
+    glVertex2f(0.454 + pos_x, 0.904 + pos_y)
+    glVertex2f(0.464 + pos_x, 0.939 + pos_y)
+    glVertex2f(0.463 + pos_x, 0.903 + pos_y)
+    glVertex2f(0.464 + pos_x, 0.939 + pos_y)
+    glVertex2f(0.475 + pos_x, 0.899 + pos_y)
+    glVertex2f(0.554 + pos_x, 0.899 + pos_y)
+    glVertex2f(0.546 + pos_x, 0.932 + pos_y)
+    glVertex2f(0.560 + pos_x, 0.900 + pos_y)
+    glVertex2f(0.608 + pos_x, 0.884 + pos_y)
+    glVertex2f(0.611 + pos_x, 0.872 + pos_y)
+    glVertex2f(0.613 + pos_x, 0.861 + pos_y)
+    glVertex2f(0.613 + pos_x, 0.852 + pos_y)
+    glVertex2f(0.613 + pos_x, 0.842 + pos_y)
+    glVertex2f(0.611 + pos_x, 0.830 + pos_y)
+    glVertex2f(0.608 + pos_x, 0.818 + pos_y)
+    glVertex2f(0.603 + pos_x, 0.806 + pos_y)
+    glVertex2f(0.598 + pos_x, 0.797 + pos_y)
+    glVertex2f(0.592 + pos_x, 0.788 + pos_y)
+    glVertex2f(0.586 + pos_x, 0.780 + pos_y)
+    glVertex2f(0.578 + pos_x, 0.772 + pos_y)
+    glVertex2f(0.569 + pos_x, 0.765 + pos_y)
+    glVertex2f(0.560 + pos_x, 0.759 + pos_y)
+    glVertex2f(0.549 + pos_x, 0.754 + pos_y)
+    glVertex2f(0.539 + pos_x, 0.749 + pos_y)
+    glVertex2f(0.527 + pos_x, 0.747 + pos_y)
+    glVertex2f(0.510 + pos_x, 0.745 + pos_y)
+    glEnd()
+
+    # Mouth
+    glColor3ub(255, 255, 255)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.473 + pos_x, 0.795 + pos_y)
+    glVertex2f(0.484 + pos_x, 0.790 + pos_y)
+    glVertex2f(0.498 + pos_x, 0.787 + pos_y)
+    glVertex2f(0.511 + pos_x, 0.786 + pos_y)
+    glVertex2f(0.528 + pos_x, 0.788 + pos_y)
+    glVertex2f(0.525 + pos_x, 0.778 + pos_y)
+    glVertex2f(0.518 + pos_x, 0.770 + pos_y)
+    glVertex2f(0.506 + pos_x, 0.764 + pos_y)
+    glVertex2f(0.495 + pos_x, 0.764 + pos_y)
+    glVertex2f(0.485 + pos_x, 0.768 + pos_y)
+    glVertex2f(0.478 + pos_x, 0.775 + pos_y)
+    glVertex2f(0.473 + pos_x, 0.784 + pos_y)
+    glEnd()
+
+    # Nose
+    glColor3ub(235, 209, 160)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.496 + pos_x, 0.826 + pos_y)
+    glVertex2f(0.503 + pos_x, 0.809 + pos_y)
+    glVertex2f(0.498 + pos_x, 0.810 + pos_y)
+    glVertex2f(0.493 + pos_x, 0.815 + pos_y)
+    glVertex2f(0.493 + pos_x, 0.821 + pos_y)
+    glEnd()
+
+    # Outer Eye R
+    glColor3ub(255, 255, 255)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.520 + pos_x, 0.840 + pos_y)
+    glVertex2f(0.522 + pos_x, 0.848 + pos_y)
+    glVertex2f(0.527 + pos_x, 0.854 + pos_y)
+    glVertex2f(0.534 + pos_x, 0.859 + pos_y)
+    glVertex2f(0.542 + pos_x, 0.861 + pos_y)
+    glVertex2f(0.550 + pos_x, 0.861 + pos_y)
+    glVertex2f(0.557 + pos_x, 0.859 + pos_y)
+    glVertex2f(0.563 + pos_x, 0.854 + pos_y)
+    glVertex2f(0.567 + pos_x, 0.849 + pos_y)
+    glVertex2f(0.570 + pos_x, 0.842 + pos_y)
+    glVertex2f(0.570 + pos_x, 0.832 + pos_y)
+    glVertex2f(0.565 + pos_x, 0.828 + pos_y)
+    glVertex2f(0.558 + pos_x, 0.825 + pos_y)
+    glVertex2f(0.550 + pos_x, 0.823 + pos_y)
+    glVertex2f(0.542 + pos_x, 0.824 + pos_y)
+    glVertex2f(0.534 + pos_x, 0.826 + pos_y)
+    glVertex2f(0.528 + pos_x, 0.830 + pos_y)
+    glVertex2f(0.523 + pos_x, 0.834 + pos_y)
+    glEnd()
+
+    # Inner Eye R
+    glColor3ub(0, 0, 0)
+    glBegin(GL_POLYGON)
+    glVertex2f(0.535 + pos_x, 0.850 + pos_y)
+    glVertex2f(0.540 + pos_x, 0.855 + pos_y)
+    glVertex2f(0.546 + pos_x, 0.857 + pos_y)
+    glVertex2f(0.550 + pos_x, 0.854 + pos_y)
+    glVertex2f(0.553 + pos_x, 0.848 + pos_y)
+    glVertex2f(0.553 + pos_x, 0.842 + pos_y)
+    glVertex2f(0.552 + pos_x, 0.836 + pos_y)
+    glVertex2f(0.548 + pos_x, 0.831 + pos_y)
+    glVertex2f(0.541 + pos_x, 0.828 + pos_y)
+    glVertex2f(0.536 + pos_x, 0.831 + pos_y)
+    glVertex2f(0.534 + pos_x, 0.837 + pos_y)
+    glVertex2f(0.533 + pos_x, 0.844 + pos_y)
+    glEnd()
+
+    # Inner Eye L
+    glBegin(GL_POLYGON)
+    glVertex2f(0.535 + pos_x, 0.850 + pos_y)
+    glVertex2f(0.540 + pos_x, 0.855 + pos_y)
+    glVertex2f(0.546 + pos_x, 0.857 + pos_y)
+    glVertex2f(0.550 + pos_x, 0.854 + pos_y)
+    glVertex2f(0.553 + pos_x, 0.848 + pos_y)
+    glVertex2f(0.553 + pos_x, 0.842 + pos_y)
+    glVertex2f(0.552 + pos_x, 0.836 + pos_y)
+    glVertex2f(0.548 + pos_x, 0.831 + pos_y)
+    glVertex2f(0.541 + pos_x, 0.828 + pos_y)
+    glVertex2f(0.536 + pos_x, 0.831 + pos_y)
+    glVertex2f(0.534 + pos_x, 0.837 + pos_y)
+    glVertex2f(0.533 + pos_x, 0.844 + pos_y)
+    glEnd()
+
+
 def shirt():
     # Base
-    glColor3ub(253, 244, 220)
+    glColor3ub(233, 224, 200)
     glBegin(GL_POLYGON)
     glVertex2f(0.591 + pos_x, 0.519 + pos_y)
     glVertex2f(0.506 + pos_x, 0.502 + pos_y)
@@ -480,7 +680,7 @@ def shirt():
     glEnd()
 
     # Base L Arm
-    glColor3ub(253, 244, 220)
+    glColor3ub(233, 224, 200)
     glBegin(GL_QUADS)
     glVertex2f(0.592 + pos_x, 0.715 + pos_y)
     glVertex2f(0.672 + pos_x, 0.527 + pos_y)
@@ -646,7 +846,7 @@ def surfaceToTexture(pygame_surface):
 
 
 def main():
-    global texID, clock, info, score, lives, pos_x, pos_y
+    global texID, clock, info, score, lives, pos_x, pos_y, high, HITAM, PUTIH
     # Pygame init
     pygame.init()
     pygame.display.init()
@@ -673,8 +873,8 @@ def main():
 
     # Scene init
     scenes = {
-        'TITLE': TitleScene('LEVEL', 'MARTUNG', 'Mari Berhitung', '', '', '', '', '',
-                            'Tekan [SPASI] untuk mulai'),
+        'TITLE': TitleScene('LEVEL', 'Mar - Tung', 'M a r i  B e r h i t u n g', '', '',
+                            'Tekan                untuk mulai'),
         'LEVEL': LevelScene(),
         'GAME': GameScene(),
         'RESULT': ResultScene('TITLE', 'GAME OVER')
@@ -682,14 +882,24 @@ def main():
     scene = scenes['TITLE']
 
     # Game init
+    HITAM = (0, 0, 0)
+    PUTIH = (255, 255, 255)
     score = Watcher(0, 'score')
     lives = Watcher(3, 'lives')
     pos_x = -0.55
-    pos_y = -0.75
+    pos_y = -0.9
     draw = False
 
     done = False
     while not done:
+        # Check high score
+        file_r = open('config.txt', 'r')
+        name, value = file_r.read().split(' = ')
+        name = bytearray.fromhex(name).decode()
+        value = int(value, 16)
+        if name == 'skor tertinggi':
+            high = value
+
         # Event
         events = pygame.event.get()
         for e in events:
