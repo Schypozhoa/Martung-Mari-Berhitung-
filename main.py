@@ -179,8 +179,8 @@ class GameScene:
         surfCenterW = self.background.get_width() / 2
         surfCenterH = self.background.get_height() / 2
 
-        fontQ.render_to(self.background, (surfCenterW - 80, surfCenterH - 45), self.question, pygame.Color('black'))
-        fontQ.render_to(self.background, (surfCenterW - 81, surfCenterH - 46), self.question, pygame.Color('white'))
+        fontQ.render_to(self.background, (surfCenterW - 80, surfCenterH - 90), self.question, pygame.Color('black'))
+        fontQ.render_to(self.background, (surfCenterW - 81, surfCenterH - 89), self.question, pygame.Color('white'))
 
         fontStat.render_to(self.background, (520, 5), f'Skor : {score.get_value()[2]}', pygame.Color('black'))
         fontStat.render_to(self.background, (519, 4), f'Skor : {score.get_value()[2]}', pygame.Color('white'))
@@ -233,16 +233,16 @@ class GameScene:
 
             recs_idx += 1
 
-        if self.on_left:
-            fontInfo.render_to(self.background, (surfCenterW - 140, 450),
-                               f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('black'))
-            fontInfo.render_to(self.background, (surfCenterW - 141, 449),
-                               f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('white'))
-        elif self.on_right:
-            fontInfo.render_to(self.background, (surfCenterW - 140, 450),
-                               f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('black'))
-            fontInfo.render_to(self.background, (surfCenterW - 141, 449),
-                               f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('white'))
+        # if self.on_left:
+        #     fontInfo.render_to(self.background, (surfCenterW - 140, 450),
+        #                        f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('black'))
+        #     fontInfo.render_to(self.background, (surfCenterW - 141, 449),
+        #                        f'Tekan [enter] untuk memilih {self.rect_data[0][2]}', pygame.Color('white'))
+        # elif self.on_right:
+        #     fontInfo.render_to(self.background, (surfCenterW - 140, 450),
+        #                        f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('black'))
+        #     fontInfo.render_to(self.background, (surfCenterW - 141, 449),
+        #                        f'Tekan [enter] untuk memilih {self.rect_data[1][2]}', pygame.Color('white'))
 
         surfaceToTexture(self.background)
 
@@ -253,34 +253,34 @@ class GameScene:
             #     print(event.pos)
             if pos_x <= -0.98:
                 self.on_left = True
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    print('Answering...')
-                    final_ans = self.rect_data[0][2]
-                    print(f'selected ans (left) > {final_ans}')
-                    self.gamestate.answer(final_ans)
-                    if lives.get_value() == 0:
-                        print('game over\n'
-                              '-----------------------\n')
-                        return 'RESULT', self.gamestate.get_result()
-                    elif self.gamestate.n1:
-                        return 'GAME', self.gamestate
-                    else:
-                        return 'GAME', GameState(self.gamestate.difficulty)
+                # if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                print('Answering...')
+                final_ans = self.rect_data[0][2]
+                print(f'selected ans (left) > {final_ans}')
+                self.gamestate.answer(final_ans)
+                if lives.get_value() == 0:
+                    print('game over\n'
+                          '-----------------------\n')
+                    return 'RESULT', self.gamestate.get_result()
+                elif self.gamestate.n1:
+                    return 'GAME', self.gamestate
+                else:
+                    return 'GAME', GameState(self.gamestate.difficulty)
             elif pos_x >= -0.04:
                 self.on_right = True
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    print('Answering...')
-                    final_ans = self.rect_data[1][2]
-                    print(f'selected ans (right) > {final_ans}')
-                    self.gamestate.answer(final_ans)
-                    if lives.get_value() == 0:
-                        print('game over\n'
-                              '-----------------------\n')
-                        return ('RESULT', self.gamestate.get_result())
-                    elif self.gamestate.n1:
-                        return 'GAME', self.gamestate
-                    else:
-                        return 'GAME', GameState(self.gamestate.difficulty)
+                # if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                print('Answering...')
+                final_ans = self.rect_data[1][2]
+                print(f'selected ans (right) > {final_ans}')
+                self.gamestate.answer(final_ans)
+                if lives.get_value() == 0:
+                    print('game over\n'
+                        '-----------------------\n')
+                    return ('RESULT', self.gamestate.get_result())
+                elif self.gamestate.n1:
+                    return 'GAME', self.gamestate
+                else:
+                    return 'GAME', GameState(self.gamestate.difficulty)
             else:
                 self.on_left = False
                 self.on_right = False
@@ -1033,6 +1033,7 @@ def main():
         if m1_toggle and 'Title' in fullstr:
             print('Music 1 load and play')
             pygame.mixer.music.load('musik/01.wav')
+            pygame.mixer.music.set_volume(0.5)
             pygame.mixer.music.play(-1, 0.0)
             m1_toggle = False
             m2_toggle = True
@@ -1040,6 +1041,7 @@ def main():
             print('Music 1 stop, music 2 load and play')
             pygame.mixer.music.stop()
             pygame.mixer.music.load('musik/02.wav')
+            pygame.mixer.music.set_volume(0.5)
             pygame.mixer.music.play(-1, 0.0)
             m2_toggle = False
             canistop = True
