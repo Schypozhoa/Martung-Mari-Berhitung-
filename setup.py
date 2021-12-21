@@ -1,6 +1,5 @@
 import sys
 import subprocess
-import main
 
 try:
     import OpenGL
@@ -16,4 +15,4 @@ except ImportError:
     print('PyGame not found, installing')
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pygame'])
 
-main.main()
+print('Loading library done, run main.py')
