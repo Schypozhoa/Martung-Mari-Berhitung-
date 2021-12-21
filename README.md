@@ -2,8 +2,8 @@
 Sebuah game matematik sederhana yang dibuat untuk memenuhi project UAS Grafika Komputer A-2021 dalam bahasa python dengan bantuan library pyopengl dan pygame
 
 **Instalasi**
-1. Clone repo ini
-2. Buka folder hasil clone
+1. Download zip rilis terbaru
+2. Extract zip
 3. Jalankan setup.py
 4. Enjoy
 
